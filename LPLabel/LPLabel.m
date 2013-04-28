@@ -101,7 +101,7 @@
         CGFloat penOffset = CTLineGetPenOffsetForFlush(line, 0, self.bounds.size.width);
         CGContextSetTextPosition(ctx, penOffset, textOffset);
         CTLineDraw(line, ctx);
-        textOffset += ceil(_linespacing);
+        textOffset += (ceil(_linespacing) + self.font.lineHeight);
     }
     CGContextRestoreGState(ctx);
     
@@ -127,21 +127,21 @@
     lineSpaceStyle.value = &_linespacing;
     
     CTParagraphStyleSetting settings[ ] ={lineSpaceStyle};
-    CTParagraphStyleRef style = CTParagraphStyleCreate(settings , sizeof(settings));
+    CTParagraphStyleRef style = CTParagraphStyleCreate(settings , sizeof(settings) / sizeof(CTParagraphStyleSetting));
     
     [string addAttribute:(id)kCTParagraphStyleAttributeName value: (id)style range: NSMakeRange(0 , [string length])];
     
     CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)string);
     
     CGMutablePathRef leftColumnPath = CGPathCreateMutable();
-    CGPathAddRect(leftColumnPath, NULL ,CGRectMake(0, 0, 200, MAX_TEXT_HEIGHT));
+    CGPathAddRect(leftColumnPath, NULL ,CGRectMake(0, 0, self.bounds.size.width, MAX_TEXT_HEIGHT));
     CTFrameRef leftFrame = CTFramesetterCreateFrame(framesetter,CFRangeMake(0, 0), leftColumnPath , NULL);
     
     CFArrayRef lines = CTFrameGetLines(leftFrame);
 	CFIndex numLines = CFArrayGetCount(lines);
     
     numLines = numLines <= self.maxLineCount ? numLines : self.maxLineCount;
-    CGFloat height = ceil(self.linespacing * numLines);
+    CGFloat height = ceil((self.linespacing + self.font.lineHeight) * (numLines - 1)) + self.font.lineHeight;
     
     CGPathRelease(leftColumnPath);
     CFRelease(helveticaBold);
